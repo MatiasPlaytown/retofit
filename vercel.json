@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/wp-api/:path*",
+      "destination": "https://contenidos.vip/retofit/wp-json/api/v3/articles/:path*"
+    }
+  ]
+}
