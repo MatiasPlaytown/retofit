@@ -4,10 +4,7 @@
 //   RETOFIT — app.js
 // ═══════════════════════════════════════
 
-const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
-const API_BASE = IS_LOCAL
-  ? 'https://contenidos.vip/retofit/wp-json/api/v3/articles'
-  : '/wp-api';
+const API_BASE = 'https://contenidos.vip/retofit/wp-json/api/v3/articles';
 
 // ═══════ EXERCISE ANIMATIONS ═══════
 const ANIMS = {
