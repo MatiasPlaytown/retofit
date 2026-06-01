@@ -1,9 +1,11 @@
-const CACHE = 'retofit-v2';
+const CACHE = 'retofit-v3';
 const FILES = [
-  '/retofit.html',
-  '/data.js',
+  '/',
+  '/index.html',
+  '/styles.css',
+  '/app.js',
   '/logo.png',
-  '/manifest.json'
+  '/uploads/manifest.json'
 ];
 
 self.addEventListener('install', e => {
@@ -19,6 +21,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // No interceptar llamadas a la API externa — dejar que pasen directo
+  if (e.request.url.includes('contenidos.vip')) {
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
