@@ -2,14 +2,14 @@
   "name": "RETOFIT",
   "short_name": "RETOFIT",
   "description": "Energía en acción",
-  "start_url": "/retofit.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "/logo.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
