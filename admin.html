@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETOFIT — Editor de Retos</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f0f0f;color:#e0e0e0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+  /* ── HEADER FIJO ── */
+  .fixed-top{flex-shrink:0;background:#0f0f0f;border-bottom:1px solid #222;z-index:100}
+
+  .topbar{
+    padding:11px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    border-bottom:1px solid #1e1e1e;
+  }
+  .topbar h1{font-size:15px;font-weight:800;letter-spacing:2px;color:#bfff00;text-transform:uppercase;margin-right:4px}
+  .badge{font-size:11px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:20px;padding:3px 10px;color:#666}
+  .topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+  .btn{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;transition:all .15s;white-space:nowrap}
+  .btn-lime{background:#bfff00;color:#000}.btn-lime:hover{background:#d4ff4d}
+  .btn-ghost{background:transparent;color:#777;border:1px solid #2a2a2a}.btn-ghost:hover{background:#1a1a1a;color:#ccc}
+  .btn-red{background:transparent;color:#ff5555;border:1px solid #ff555522;border-radius:6px;padding:4px 9px;font-size:11px}.btn-red:hover{background:#ff55550d}
+
+  .filters{padding:8px 20px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #1a1a1a}
+  .filters label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+  .pill{padding:4px 12px;border-radius:20px;border:1px solid #252525;background:transparent;color:#555;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
+  .pill.active{background:#bfff001a;border-color:#bfff0055;color:#bfff00}
+  .pill:hover:not(.active){background:#1a1a1a;color:#ccc}
+  .sep{width:1px;height:16px;background:#2a2a2a;margin:0 4px}
+  .search{background:#161616;border:1px solid #252525;border-radius:8px;color:#e0e0e0;padding:5px 10px;font-size:12px;margin-left:auto;width:180px}
+  .search:focus{outline:none;border-color:#bfff0044}
+
+  .stats-row{padding:5px 20px;display:flex;gap:14px;background:#0a0a0a;border-bottom:1px solid #161616}
+  .stat{font-size:11px;color:#444}.stat span{color:#bfff00;font-weight:700}
+
+  /* ── TABLA SCROLLEABLE ── */
+  .table-wrap{flex:1;overflow:auto}
+  table{border-collapse:collapse;min-width:100%;font-size:12px;table-layout:fixed}
+
+  thead th{
+    position:sticky;top:0;z-index:10;
+    background:#111;border-bottom:2px solid #252525;
+    padding:8px 8px;text-align:left;
+    font-size:10px;font-weight:700;letter-spacing:1.5px;color:#444;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;
+  }
+  tbody tr{border-bottom:1px solid #161616;transition:background .1s}
+  tbody tr:hover{background:#131313}
+  tbody tr.hidden{display:none}
+  td{padding:5px 6px;vertical-align:top}
+
+  input[type=text],select,textarea{
+    background:#161616;border:1px solid #222;border-radius:6px;
+    color:#e0e0e0;padding:5px 7px;font-size:12px;font-family:inherit;
+    transition:border-color .15s;width:100%;
+  }
+  input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:#bfff0055;background:#1a1a1a}
+  select{cursor:pointer}
+  textarea{resize:vertical;line-height:1.5}
+
+  /* widths */
+  .w-num{width:30px}.w-id{width:130px}.w-name{width:165px}.w-dur{width:82px}
+  .w-diff{width:88px}.w-emoji{width:58px}.w-anim{width:90px}
+  .w-desc{width:210px}.w-steps{width:230px}.w-video{width:155px}.w-grad{width:135px}.w-act{width:46px}
+
+  .diff-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
+  .diff-facil{background:#00ff881a;color:#00ff88;border:1px solid #00ff8833}
+  .diff-medio{background:#ffaa001a;color:#ffaa00;border:1px solid #ffaa0033}
+  .diff-dificil{background:#ff55551a;color:#ff7777;border:1px solid #ff555533}
+  .row-num{color:#333;font-size:10px;text-align:center;padding-top:10px}
+  .steps-ct{font-size:10px;color:#333;margin-top:2px}
+  .grad-prev{height:6px;border-radius:3px;margin-top:4px}
+
+  /* modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
+  .modal-bg.open{display:flex}
+  .modal{background:#111;border:1px solid #2a2a2a;border-radius:14px;padding:24px;width:min(700px,92vw);max-height:88vh;display:flex;flex-direction:column;gap:14px}
+  .modal h2{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#bfff00}
+  .modal pre{flex:1;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px;padding:14px;font-size:11px;line-height:1.6;color:#999;overflow:auto;white-space:pre-wrap;word-break:break-all}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:#bfff00;color:#000;padding:9px 22px;border-radius:100px;font-weight:700;font-size:12px;letter-spacing:.5px;opacity:0;transition:all .25s;pointer-events:none;z-index:999}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="fixed-top">
+  <div class="topbar">
+    <h1>Retofit</h1>
+    <span class="badge">Editor de Retos</span>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="addRow()">+ Agregar</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">Exportar CSV</button>
+      <button class="btn btn-lime" onclick="openExport()">Exportar data.js</button>
+    </div>
+  </div>
+  <div class="filters">
+    <label>Filtrar:</label>
+    <button class="pill active" onclick="setFilter('all',this)">Todos</button>
+    <button class="pill" onclick="setFilter('facil',this)">Fácil</button>
+    <button class="pill" onclick="setFilter('medio',this)">Medio</button>
+    <button class="pill" onclick="setFilter('dificil',this)">Difícil</button>
+    <div class="sep"></div>
+    <button class="pill" onclick="setFilter('60',this)">1 min</button>
+    <button class="pill" onclick="setFilter('180',this)">3 min</button>
+    <button class="pill" onclick="setFilter('300',this)">5 min</button>
+    <input class="search" type="text" placeholder="Buscar…" oninput="applySearch(this.value)">
+  </div>
+  <div class="stats-row">
+    <div class="stat">Total: <span id="st-total">0</span></div>
+    <div class="stat">Fácil: <span id="st-facil">0</span></div>
+    <div class="stat">Medio: <span id="st-medio">0</span></div>
+    <div class="stat">Difícil: <span id="st-dificil">0</span></div>
+    <div class="stat">1 min: <span id="st-60">0</span></div>
+    <div class="stat">3 min: <span id="st-180">0</span></div>
+    <div class="stat">5 min: <span id="st-300">0</span></div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="w-num">#</th>
+        <th class="w-id">ID</th>
+        <th class="w-name">Nombre</th>
+        <th class="w-dur">Duración</th>
+        <th class="w-diff">Dificultad</th>
+        <th class="w-emoji">Emoji</th>
+        <th class="w-anim">Animación</th>
+        <th class="w-desc">Descripción</th>
+        <th class="w-steps">Pasos (uno por línea)</th>
+        <th class="w-video">Video</th>
+        <th class="w-grad">Gradiente</th>
+        <th class="w-act"></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2>data.js generado</h2>
+    <pre id="export-pre"></pre>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>
+      <button class="btn btn-lime" onclick="copyExport()">Copiar al portapapeles</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+let rows = CHALLENGES.map(c=>({...c,steps:[...c.steps]}));
+let currentFilter='all', currentSearch='';
+const ANIMS=['breath','stretch','squat','plank','circuit'];
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function render(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.idx=i; tr.dataset.diff=r.difficulty; tr.dataset.dur=r.duration;
+    tr.innerHTML=`
+      <td class="w-num row-num">${i+1}</td>
+      <td class="w-id"><input type="text" value="${esc(r.id)}" oninput="upd(${i},'id',this.value)"></td>
+      <td class="w-name"><input type="text" value="${esc(r.name)}" oninput="upd(${i},'name',this.value)"></td>
+      <td class="w-dur">
+        <select onchange="upd(${i},'duration',+this.value);this.closest('tr').dataset.dur=this.value;applyFilter()">
+          <option value="60" ${r.duration===60?'selected':''}>1 min</option>
+          <option value="180" ${r.duration===180?'selected':''}>3 min</option>
+          <option value="300" ${r.duration===300?'selected':''}>5 min</option>
+        </select>
+      </td>
+      <td class="w-diff">
+        <select onchange="upd(${i},'difficulty',this.value);this.closest('tr').dataset.diff=this.value;refreshDiffBadge(${i},this.value);applyFilter()">
+          <option value="facil" ${r.difficulty==='facil'?'selected':''}>Fácil</option>
+          <option value="medio" ${r.difficulty==='medio'?'selected':''}>Medio</option>
+          <option value="dificil" ${r.difficulty==='dificil'?'selected':''}>Difícil</option>
+        </select>
+        <div class="diff-badge diff-${r.difficulty}" id="db-${i}">${r.difficulty}</div>
+      </td>
+      <td class="w-emoji"><input type="text" value="${esc(r.emoji||'')}" oninput="upd(${i},'emoji',this.value)" style="text-align:center;font-size:17px"></td>
+      <td class="w-anim">
+        <select onchange="upd(${i},'anim',this.value)">
+          ${ANIMS.map(a=>`<option value="${a}" ${r.anim===a?'selected':''}>${a}</option>`).join('')}
+        </select>
+      </td>
+      <td class="w-desc"><textarea oninput="upd(${i},'desc',this.value)" rows="3">${esc(r.desc||'')}</textarea></td>
+      <td class="w-steps">
+        <textarea oninput="updSteps(${i},this.value)" rows="4">${(r.steps||[]).map(s=>esc(s)).join('\n')}</textarea>
+        <div class="steps-ct" id="sc-${i}">${(r.steps||[]).length} pasos</div>
+      </td>
+      <td class="w-video"><input type="text" value="${esc(r.video||'')}" oninput="upd(${i},'video',this.value)" placeholder="videos/${esc(r.id)}.mp4"></td>
+      <td class="w-grad">
+        <input type="text" value="${esc(r.grad||'')}" oninput="upd(${i},'grad',this.value);updGrad(this,${i})" style="font-size:10px">
+        <div class="grad-prev" id="gp-${i}" style="background:${r.grad}"></div>
+      </td>
+      <td class="w-act"><button class="btn-red" onclick="deleteRow(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  applyFilter();
+  updateStats();
+}
+
+function upd(i,key,val){rows[i][key]=val}
+function updSteps(i,val){
+  rows[i].steps=val.split('\n').map(s=>s.trim()).filter(Boolean);
+  const el=document.getElementById('sc-'+i);
+  if(el) el.textContent=rows[i].steps.length+' pasos';
+}
+function updGrad(input,i){
+  const el=document.getElementById('gp-'+i);
+  if(el) el.style.background=input.value;
+}
+function refreshDiffBadge(i,val){
+  const el=document.getElementById('db-'+i);
+  if(el){el.className='diff-badge diff-'+val;el.textContent=val;}
+}
+
+function addRow(){
+  rows.push({id:'nuevo_reto_'+Date.now(),name:'Nuevo Reto',duration:60,difficulty:'facil',emoji:'⚡',
+    grad:'linear-gradient(270deg,#001a20,#001020,#001a20)',anim:'breath',video:'',
+    desc:'Descripción del reto.',steps:['Paso 1','Paso 2']});
+  render();
+  document.querySelector('#tbody tr:last-child')?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function deleteRow(i){
+  if(!confirm(`¿Eliminar "${rows[i].name}"?`))return;
+  rows.splice(i,1);render();
+}
+
+function setFilter(val,el){
+  currentFilter=val;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilter();
+}
+function applySearch(val){currentSearch=val.toLowerCase();applyFilter();}
+function applyFilter(){
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const i=+tr.dataset.idx, r=rows[i];
+    if(!r){tr.classList.add('hidden');return;}
+    let show=true;
+    if(currentFilter!=='all'){
+      show=currentFilter==='60'||currentFilter==='180'||currentFilter==='300'
+        ?String(r.duration)===currentFilter
+        :r.difficulty===currentFilter;
+    }
+    if(show&&currentSearch){
+      show=(r.id+r.name+(r.desc||'')+(r.steps||[]).join(' ')).toLowerCase().includes(currentSearch);
+    }
+    tr.classList.toggle('hidden',!show);
+  });
+  updateStats();
+}
+function updateStats(){
+  const vis=rows.filter((_,i)=>{const t=document.querySelector(`tr[data-idx="${i}"]`);return t&&!t.classList.contains('hidden');});
+  document.getElementById('st-total').textContent=vis.length;
+  document.getElementById('st-facil').textContent=vis.filter(r=>r.difficulty==='facil').length;
+  document.getElementById('st-medio').textContent=vis.filter(r=>r.difficulty==='medio').length;
+  document.getElementById('st-dificil').textContent=vis.filter(r=>r.difficulty==='dificil').length;
+  document.getElementById('st-60').textContent=vis.filter(r=>r.duration===60).length;
+  document.getElementById('st-180').textContent=vis.filter(r=>r.duration===180).length;
+  document.getElementById('st-300').textContent=vis.filter(r=>r.duration===300).length;
+}
+
+function generateJS(){
+  const entries=rows.map(r=>{
+    const st=(r.steps||[]).map(s=>`'${s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}'`).join(',');
+    const q=s=>String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `  {id:'${q(r.id)}',name:'${q(r.name)}',duration:${r.duration},difficulty:'${r.difficulty}',emoji:'${q(r.emoji)}',\n   grad:'${q(r.grad)}',anim:'${q(r.anim)}',video:'${q(r.video)}',\n   desc:'${q(r.desc)}',\n   steps:[${st}]}`;
+  });
+  return `// ─── CHALLENGE DATA ───────────────────────────────────────────────────────────\nconst CHALLENGES = [\n${entries.join(',\n')}\n];\n`;
+}
+function openExport(){document.getElementById('export-pre').textContent=generateJS();document.getElementById('modal-bg').classList.add('open');}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+function copyExport(){
+  navigator.clipboard.writeText(generateJS()).then(()=>{showToast('¡Copiado! Pegalo en data.js');closeModal();})
+    .catch(()=>showToast('Copiá el texto manualmente'));
+}
+function exportCSV(){
+  const h=['id','name','duration','difficulty','emoji','anim','desc','steps','video','grad'];
+  const lines=[h.join('\t'),...rows.map(r=>[
+    r.id,r.name,r.duration,r.difficulty,r.emoji||'',r.anim||'',
+    (r.desc||'').replace(/\t/g,' '),(r.steps||[]).join(' | ').replace(/\t/g,' '),r.video||'',r.grad||''
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join('\t'))];
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/tab-separated-values'})),download:'retofit-retos.tsv'});
+  a.click();showToast('Descargado — abrilo en Excel o Sheets');
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3000);}
+
+render();
+</script>
+</body>
+</html>
