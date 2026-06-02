@@ -404,6 +404,28 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
   .load-more-btn{width:calc(100% - 64px);margin:8px 32px 16px}
 }
 
+/* ══ START SCREEN ══ */
+.start-screen{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px 48px;background:var(--bg);overflow-y:auto}
+.start-logo{height:30px;width:auto;display:block;margin:0 auto 36px}
+.start-hero{text-align:center;margin-bottom:32px}
+.start-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:44px;text-transform:uppercase;letter-spacing:-1px;line-height:1;color:var(--text);margin-bottom:10px}
+.start-sub{font-size:14px;color:var(--muted2);line-height:1.55;max-width:290px;margin:0 auto}
+.start-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.start-field-wrap{display:flex;flex-direction:column;gap:8px}
+.start-label{font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted)}
+.start-stepper{display:flex;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;height:54px;transition:border-color .18s}
+.start-stepper:focus-within{border-color:rgba(191,255,0,0.35)}
+.start-stepper button{width:54px;height:54px;background:transparent;border:none;color:var(--lime);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;font-family:'Barlow Condensed',sans-serif}
+.start-stepper button:hover{background:var(--lime-dim)}
+.start-stepper button:active{background:rgba(191,255,0,0.15)}
+.start-stepper-val{flex:1;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px}
+.start-stepper-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--text);min-width:42px;text-align:right}
+.start-stepper-unit{font-size:13px;color:var(--muted2)}
+
+/* ══ ANI MODAL ══ */
+.ani-modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+.ani-modal{background:#141414;border:1px solid var(--border);border-radius:24px;padding:32px 24px;width:100%;max-width:380px;animation:fadeIn .25s ease}
+
 @media(prefers-reduced-motion:reduce){
   .check-ring,.badge-float,.pulse,.vbg,.aa-plank,.aa-squat,.aa-breath,.aa-stretch,.aa-circuit{animation:none}
   *{transition-duration:.01ms !important}

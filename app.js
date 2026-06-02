@@ -459,7 +459,6 @@ async function loadMoreCategoryContent() {
 async function loadMoreContent() {
   if (!contentNextUrl) return;
   const btn = document.getElementById('content-load-more');
-  const grid = document.getElementById('home-grid');
   if (btn) { btn.disabled = true; btn.textContent = 'Cargando...'; }
   try {
     const res = await fetch(contentNextUrl);
@@ -942,11 +941,182 @@ function resetAllData() {
   location.reload();
 }
 
+// ═══════ ANI VALIDATION ═══════
+const ANI_KEY = 'rf_ani';
+// TODO: Replace with the real subscription validation endpoint
+const ANI_VALIDATE_URL = 'https://contenidos.vip/retofit/wp-json/api/v3/validate-ani';
+
+const ANI_COUNTRIES = [
+  { prefix: '54', name: 'Argentina', flag: '🇦🇷', placeholder: 'Ej: 11 1234 5678' },
+  { prefix: '595', name: 'Paraguay', flag: '🇵🇾', placeholder: 'Ej: 961 123456' },
+];
+
+function getSavedAni() {
+  return localStorage.getItem(ANI_KEY);
+}
+
+function saveAni(ani) {
+  localStorage.setItem(ANI_KEY, ani);
+}
+
+function checkAniInUrl() {
+  const params = new URLSearchParams(location.search);
+  const ani = params.get('ani');
+  if (ani && ani.trim()) {
+    saveAni(ani.trim());
+    const url = new URL(location.href);
+    url.searchParams.delete('ani');
+    history.replaceState(null, '', url.toString());
+    return true;
+  }
+  return false;
+}
+
+function updateAniPlaceholder() {
+  const sel = document.getElementById('ani-country');
+  const input = document.getElementById('ani-phone-input');
+  if (!sel || !input) return;
+  const country = ANI_COUNTRIES.find(c => c.prefix === sel.value);
+  if (country) input.placeholder = country.placeholder;
+}
+
+function showAniModal() {
+  if (document.getElementById('ani-modal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'ani-modal';
+  modal.className = 'ani-modal-wrap';
+  modal.innerHTML = `
+    <div class="ani-modal">
+      <img src="logo.png" alt="RETOFIT" style="height:26px;width:auto;display:block;margin:0 auto 20px">
+      <p class="label tc" style="margin-bottom:6px">Acceso RETOFIT</p>
+      <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;text-transform:uppercase;letter-spacing:-.5px;text-align:center;color:var(--text);margin-bottom:10px">Verificá tu suscripción</h2>
+      <p style="font-size:13px;color:var(--muted2);line-height:1.55;text-align:center;margin-bottom:22px">Para acceder a RETOFIT necesitás tener una suscripción activa. Ingresá tu número para verificar.</p>
+      <div style="margin-bottom:12px">
+        <p class="label" style="margin-bottom:8px">País</p>
+        <select class="field" id="ani-country" onchange="updateAniPlaceholder()" style="cursor:pointer">
+          ${ANI_COUNTRIES.map(c => `<option value="${c.prefix}">${c.flag} ${c.name} (+${c.prefix})</option>`).join('')}
+        </select>
+      </div>
+      <div style="margin-bottom:6px">
+        <p class="label" style="margin-bottom:8px">Número de celular</p>
+        <div class="field-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.58 3.35 2 2 0 0 1 3.55 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.06 6.06l.79-.79a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.92Z"/></svg>
+          <input class="field" type="tel" id="ani-phone-input" placeholder="Ej: 11 1234 5678" inputmode="numeric" maxlength="15">
+        </div>
+      </div>
+      <p class="err" id="ani-error" style="min-height:18px;margin-bottom:10px"></p>
+      <button class="btn btn-p" id="ani-validate-btn" onclick="handleAniValidate()">VERIFICAR</button>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('ani-phone-input')?.focus(), 150);
+}
+
+// TODO: Remove before production — test ANIs that always validate successfully
+const TEST_ANIS = ['541112345678', '5959611234567'];
+
+async function handleAniValidate() {
+  const btn = document.getElementById('ani-validate-btn');
+  const errEl = document.getElementById('ani-error');
+  const phoneInput = document.getElementById('ani-phone-input');
+  const prefix = document.getElementById('ani-country')?.value || '54';
+  if (!phoneInput || !errEl) return;
+
+  errEl.textContent = '';
+  const digits = phoneInput.value.trim().replace(/\D/g, '').replace(/^0+/, '');
+  if (digits.length < 7) {
+    errEl.textContent = 'Ingresá un número válido (sin el 0 inicial).';
+    return;
+  }
+
+  const fullAni = prefix + digits;
+  btn.disabled = true;
+  btn.textContent = 'VERIFICANDO...';
+
+  // Test whitelist — bypass real API
+  if (TEST_ANIS.includes(fullAni)) {
+    await new Promise(r => setTimeout(r, 800)); // Simulate network delay
+    saveAni(fullAni);
+    document.getElementById('ani-modal')?.remove();
+    const page = location.pathname.split('/').pop() || 'index.html';
+    if (page !== 'start.html' && !localStorage.getItem(PROFILE_KEY)) {
+      location.href = 'start.html';
+    }
+    return;
+  }
+
+  try {
+    const res = await fetch(`${ANI_VALIDATE_URL}?ani=${encodeURIComponent(fullAni)}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    if (data.subscribed || data.success || data.active) {
+      saveAni(fullAni);
+      document.getElementById('ani-modal')?.remove();
+      const page = location.pathname.split('/').pop() || 'index.html';
+      if (page !== 'start.html' && !localStorage.getItem(PROFILE_KEY)) {
+        location.href = 'start.html';
+      }
+    } else {
+      errEl.textContent = 'ANI no suscripto. Contactá a tu operadora para activar el servicio.';
+    }
+  } catch (e) {
+    errEl.textContent = 'Error al verificar. Revisá tu conexión e intentá de nuevo.';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'VERIFICAR'; }
+  }
+}
+
+// ═══════ START PAGE INIT ═══════
+const START_LIMITS = { age: [10, 99], height: [100, 230], weight: [30, 250] };
+
+function stepStart(field, delta) {
+  const el = document.getElementById('start-' + field + '-val');
+  if (!el) return;
+  const [min, max] = START_LIMITS[field];
+  let v = parseInt(el.textContent) + delta;
+  el.textContent = Math.max(min, Math.min(max, v));
+}
+
+function submitStartForm(e) {
+  e.preventDefault();
+  const name = (document.getElementById('start-name')?.value || '').trim() || 'Atleta';
+  const age = parseInt(document.getElementById('start-age-val')?.textContent) || 25;
+  const height = parseInt(document.getElementById('start-height-val')?.textContent) || 170;
+  const weight = parseInt(document.getElementById('start-weight-val')?.textContent) || 70;
+  saveProfile({ name, age, height, weight });
+  location.href = 'index.html';
+}
+
+function initStartPage() {
+  if (localStorage.getItem(PROFILE_KEY)) {
+    location.href = 'index.html';
+  }
+}
+
 // ═══════ INIT ROUTER ═══════
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Save ANI from URL if carrier-redirected
+  checkAniInUrl();
+
+  const page = location.pathname.split('/').pop() || 'index.html';
+  const isStartPage = page === 'start.html';
+
+  // 2. Profile guard: redirect to onboarding if no profile
+  if (!isStartPage && !localStorage.getItem(PROFILE_KEY)) {
+    location.href = 'start.html';
+    return;
+  }
+
+  // 3. ANI guard: block navigation until subscription is verified
+  if (!getSavedAni()) {
+    showAniModal();
+  }
+
+  // 4. Init page
   if (document.getElementById('home-challenges')) { initHome(); return; }
   if (document.getElementById('challenge-container')) { initChallengePage(); return; }
   if (document.getElementById('article-content')) { initArticlePage(); return; }
   if (document.getElementById('stats-container')) { initStatsPage(); return; }
   if (document.getElementById('perfil-container')) { initPerfilPage(); return; }
+  if (document.getElementById('start-container')) { initStartPage(); return; }
 });
