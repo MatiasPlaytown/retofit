@@ -943,8 +943,9 @@ function resetAllData() {
 
 // ═══════ ANI VALIDATION ═══════
 const ANI_KEY = 'rf_ani';
-// TODO: Replace with the real subscription validation endpoint
-const ANI_VALIDATE_URL = 'https://contenidos.vip/retofit/wp-json/api/v3/validate-ani';
+const ANI_VALIDATE_BASE = 'https://restito.playtown.com.ar:3000/club/checkClubSubscription/playar';
+const ANI_CLUB_ID = '35';
+const ANI_BEARER = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.pwI0ElRICzc-j85krDiV5nUkz_lZLwmiuJ3m790JNBQ';
 
 const ANI_COUNTRIES = [
   { prefix: '54', name: 'Argentina', flag: '🇦🇷', placeholder: 'Ej: 11 1234 5678' },
@@ -952,18 +953,55 @@ const ANI_COUNTRIES = [
 ];
 
 function getSavedAni() {
-  return localStorage.getItem(ANI_KEY);
+  const raw = localStorage.getItem(ANI_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed.ani || null;
+  } catch {
+    return raw; // legacy: plain string
+  }
 }
 
 function saveAni(ani) {
-  localStorage.setItem(ANI_KEY, ani);
+  localStorage.setItem(ANI_KEY, JSON.stringify({ ani, validatedAt: new Date().toISOString() }));
+}
+
+function isAniValidThisMonth() {
+  const raw = localStorage.getItem(ANI_KEY);
+  if (!raw) return false;
+  try {
+    const { ani, validatedAt } = JSON.parse(raw);
+    if (!ani || !validatedAt) return false;
+    const saved = new Date(validatedAt);
+    const now = new Date();
+    return saved.getFullYear() === now.getFullYear() && saved.getMonth() === now.getMonth();
+  } catch {
+    return false; // legacy plain string = needs re-validation
+  }
+}
+
+async function validateAniWithApi(fullAni) {
+  const res = await fetch(`${ANI_VALIDATE_BASE}/${encodeURIComponent(fullAni)}/${ANI_CLUB_ID}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${ANI_BEARER}` },
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  try {
+    const data = JSON.parse(text);
+    return data.subscribed || data.success || data.active || data.status === 'active' || false;
+  } catch {
+    // Plain text response: truthy if non-empty and not an error string
+    return text.trim().length > 0 && !/error|false|invalid/i.test(text);
+  }
 }
 
 function checkAniInUrl() {
   const params = new URLSearchParams(location.search);
   const ani = params.get('ani');
   if (ani && ani.trim()) {
-    saveAni(ani.trim());
+    saveAni(ani.trim()); // carrier-injected ANI is already validated by the network
     const url = new URL(location.href);
     url.searchParams.delete('ani');
     history.replaceState(null, '', url.toString());
@@ -1011,9 +1049,6 @@ function showAniModal() {
   setTimeout(() => document.getElementById('ani-phone-input')?.focus(), 150);
 }
 
-// TODO: Remove before production — test ANIs that always validate successfully
-const TEST_ANIS = ['541112345678', '5959611234567'];
-
 async function handleAniValidate() {
   const btn = document.getElementById('ani-validate-btn');
   const errEl = document.getElementById('ani-error');
@@ -1032,24 +1067,9 @@ async function handleAniValidate() {
   btn.disabled = true;
   btn.textContent = 'VERIFICANDO...';
 
-  // Test whitelist — bypass real API
-  if (TEST_ANIS.includes(fullAni)) {
-    await new Promise(r => setTimeout(r, 800)); // Simulate network delay
-    saveAni(fullAni);
-    document.getElementById('ani-modal')?.remove();
-    const page = location.pathname.split('/').pop() || 'index.html';
-    if (page !== 'start.html' && !localStorage.getItem(PROFILE_KEY)) {
-      location.href = 'start.html';
-    }
-    return;
-  }
-
   try {
-    const res = await fetch(`${ANI_VALIDATE_URL}?ani=${encodeURIComponent(fullAni)}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-
-    if (data.subscribed || data.success || data.active) {
+    const ok = await validateAniWithApi(fullAni);
+    if (ok) {
       saveAni(fullAni);
       document.getElementById('ani-modal')?.remove();
       const page = location.pathname.split('/').pop() || 'index.html';
@@ -1107,8 +1127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // 3. ANI guard: block navigation until subscription is verified
-  if (!getSavedAni()) {
+  // 3. ANI guard: block navigation until subscription is verified this month
+  if (!isAniValidThisMonth()) {
     showAniModal();
   }
 
