@@ -987,14 +987,8 @@ async function validateAniWithApi(fullAni) {
     headers: { 'Authorization': `Bearer ${ANI_BEARER}` },
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const text = await res.text();
-  try {
-    const data = JSON.parse(text);
-    return data.subscribed || data.success || data.active || data.status === 'active' || false;
-  } catch {
-    // Plain text response: truthy if non-empty and not an error string
-    return text.trim().length > 0 && !/error|false|invalid/i.test(text);
-  }
+  const data = await res.json();
+  return typeof data.result === 'object' && !!data.result?.ANI;
 }
 
 function checkAniInUrl() {
