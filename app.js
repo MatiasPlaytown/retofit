@@ -750,7 +750,7 @@ function setupVideoListeners() {
   });
   vid.addEventListener('timeupdate', () => {
     if (!currentChallenge || !vid.duration) return;
-    const pct = (vid.currentTime / vid.duration) * 100;
+    const pct = Math.min(100, (vid.currentTime / currentChallenge.duration) * 100);
     document.getElementById('vpfill').style.width = pct + '%';
     updateVTimeLabel(Math.floor(vid.currentTime), currentChallenge.duration);
   });
