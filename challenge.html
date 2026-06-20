@@ -122,12 +122,18 @@
           Comenzar reto
         </button>
 
+        <!-- Countdown timer (visible after "Comenzar") -->
+        <div id="countdown-wrap" style="display:none;text-align:center;padding:4px 0">
+          <div id="countdown-val" style="font-family:'Barlow Condensed';font-size:72px;font-weight:900;color:var(--lime);line-height:1;letter-spacing:-2px">1:00</div>
+          <p style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px">tiempo restante</p>
+        </div>
+
         <button class="btn btn-p" id="ch-finish-btn" onclick="finishChallenge()"
           style="display:none;opacity:0.4;background:var(--lime)" disabled>
           <svg style="width:17px;height:17px;fill:#000;margin-right:8px" viewBox="0 0 24 24">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          Finalizar reto
+          Completar ejercicio
         </button>
 
         <p style="font-size:12px;color:var(--muted);text-align:center" id="ch-dur-txt">Duración: 1:00</p>

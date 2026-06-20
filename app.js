@@ -603,6 +603,8 @@ let currentChallenge = null;
 let videoPlaying = false;
 let vprogInt = null;
 let realVideoReady = false;
+let countdownSecs = 0;
+let countdownInt = null;
 
 async function initChallengePage() {
   initNav();
@@ -636,7 +638,12 @@ function renderChallenge(c) {
   document.getElementById('vbg').style.background = c.grad + ';background-size:400% 400%';
   document.getElementById('vanim').innerHTML = ANIMS[c.anim] || ANIMS.squat;
   document.getElementById('ch-dur-txt').textContent = 'Duración: ' + fmtTime(c.duration);
+  document.getElementById('ch-dur-txt').style.display = '';
   document.getElementById('vtime-lbl').textContent = '0:00 / ' + fmtTime(c.duration);
+  const cdVal = document.getElementById('countdown-val');
+  if (cdVal) cdVal.textContent = fmtTime(c.duration);
+  const cdWrap = document.getElementById('countdown-wrap');
+  if (cdWrap) cdWrap.style.display = 'none';
   document.getElementById('ch-steps').innerHTML = c.steps.map((s, i) => `
     <div class="ch-step">
       <div class="step-num"><span>${i + 1}</span></div>
@@ -759,31 +766,51 @@ function setupVideoListeners() {
   });
 }
 
+function startCountdown(dur) {
+  clearInterval(countdownInt);
+  countdownSecs = dur;
+  updateCountdownDisplay();
+  countdownInt = setInterval(() => {
+    countdownSecs = Math.max(0, countdownSecs - 1);
+    updateCountdownDisplay();
+    if (countdownSecs <= 0) {
+      clearInterval(countdownInt);
+      enableFinishBtn();
+    }
+  }, 1000);
+}
+
+function updateCountdownDisplay() {
+  const el = document.getElementById('countdown-val');
+  if (el) el.textContent = fmtTime(countdownSecs);
+}
+
 function startChallenge() {
   document.getElementById('ch-start-btn').style.display = 'none';
+  document.getElementById('ch-dur-txt').style.display = 'none';
+  const wrap = document.getElementById('countdown-wrap');
+  if (wrap) wrap.style.display = 'block';
+
   const finBtn = document.getElementById('ch-finish-btn');
   finBtn.style.display = 'flex';
   finBtn.disabled = true;
   finBtn.style.opacity = '0.4';
   finBtn.classList.remove('pulse');
 
+  const dur = (currentChallenge && currentChallenge.duration) || 60;
+  startCountdown(dur);
+
   const hasVideo = !!(currentChallenge && currentChallenge.video);
   if (hasVideo) {
     const hint = document.getElementById('ch-watch-hint');
     if (hint) hint.style.display = 'block';
     if (!videoPlaying) toggleVideo();
-  } else {
-    const dur = (currentChallenge && currentChallenge.duration) || 60;
-    clearInterval(vprogInt);
-    vprogInt = setInterval(() => {
-      clearInterval(vprogInt);
-      enableFinishBtn();
-    }, dur * 1000);
   }
 }
 
 function finishChallenge() {
   if (!currentChallenge) return;
+  clearInterval(countdownInt);
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
   if (id) markChallengeCompleted(id);
