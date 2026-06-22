@@ -202,7 +202,7 @@ function parseChallengeData(article) {
   return {
     id: article.id,
     name: d.name || article.title,
-    duration: d.duration || 60,
+    duration: (d.duration || 1) * 60,
     difficulty: diff,
     desc: d.desc || article.short_description || '',
     steps: d.steps || [],
@@ -632,7 +632,7 @@ async function initChallengePage() {
 
 function renderChallenge(c) {
   document.getElementById('ch-title').textContent = c.name;
-  const durLabel = c.duration === 60 ? '1 minuto' : c.duration === 180 ? '3 minutos' : c.duration + ' seg';
+  const durLabel = c.duration === 60 ? '1 minuto' : c.duration === 180 ? '3 minutos' : c.duration === 300 ? '5 minutos' : Math.round(c.duration / 60) + ' min';
   document.getElementById('ch-level').textContent = durLabel;
   document.getElementById('ch-desc').textContent = c.desc;
   document.getElementById('vbg').style.background = c.grad + ';background-size:400% 400%';
