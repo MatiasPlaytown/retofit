@@ -750,6 +750,7 @@ function setupVideoListeners() {
   });
   vid.addEventListener('timeupdate', () => {
     if (!currentChallenge || !vid.duration) return;
+    if (countdownInt) return;
     const pct = Math.min(100, (vid.currentTime / currentChallenge.duration) * 100);
     document.getElementById('vpfill').style.width = pct + '%';
     updateVTimeLabel(Math.floor(vid.currentTime), currentChallenge.duration);
@@ -783,6 +784,12 @@ function startCountdown(dur) {
 function updateCountdownDisplay() {
   const el = document.getElementById('countdown-val');
   if (el) el.textContent = fmtTime(countdownSecs);
+  if (!currentChallenge) return;
+  const dur = currentChallenge.duration;
+  const elapsed = dur - countdownSecs;
+  updateVTimeLabel(elapsed, dur);
+  const fill = document.getElementById('vpfill');
+  if (fill) fill.style.width = Math.min(100, (elapsed / dur) * 100) + '%';
 }
 
 function startChallenge() {
