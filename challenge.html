@@ -16,13 +16,14 @@
     body { overflow: hidden; }
     #challenge-container {
       grid-template-columns: 3fr 2fr;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto 1fr;
       min-height: 100dvh;
       overflow: hidden;
     }
-    #challenge-container > .ch-header { grid-column: 1 / -1; }
-    #challenge-container > .vplayer { grid-column: 1; grid-row: 2; align-self: start; }
-    #challenge-container > .scroll-area { grid-column: 2; grid-row: 2; border-left: 1px solid var(--border); padding-bottom: 40px; overflow-y: auto; }
+    #challenge-container > .nav-header { grid-column: 1 / -1; grid-row: 1; }
+    #challenge-container > .ch-header { grid-column: 1 / -1; grid-row: 2; }
+    #challenge-container > .vplayer { grid-column: 1; grid-row: 3; align-self: start; }
+    #challenge-container > .scroll-area { grid-column: 2; grid-row: 3; border-left: 1px solid var(--border); padding-bottom: 40px; overflow-y: auto; }
 
     #challenge-loading {
       align-items: center;
@@ -44,11 +45,11 @@
     @media(max-width: 900px) {
       #challenge-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto auto auto;
       }
-      #challenge-container > .ch-header { padding: 56px 20px 14px; }
-      #challenge-container > .vplayer { width: 100%; aspect-ratio: 16/9; grid-column: 1; grid-row: 2; }
-      #challenge-container > .scroll-area { grid-column: 1; grid-row: 3; border-left: none; overflow: visible; }
+      #challenge-container > .ch-header { padding: 14px 20px; }
+      #challenge-container > .vplayer { width: 100%; aspect-ratio: 16/9; grid-column: 1; grid-row: 3; }
+      #challenge-container > .scroll-area { grid-column: 1; grid-row: 4; border-left: none; overflow: visible; }
       body { overflow: auto; }
     }
   </style>
@@ -63,6 +64,20 @@
 
   <!-- Challenge layout -->
   <div id="challenge-container" style="display:none">
+
+    <!-- Nav header -->
+    <div class="nav-header">
+      <div class="nav-header-top">
+        <a href="index.html"><img src="logo.png" alt="RETOFIT" class="home-logo"></a>
+      </div>
+      <div class="cat-bar">
+        <a class="cat-chip" href="index.html">Todos</a>
+        <a class="cat-chip" href="index.html?cat=entrenamiento">Entrenamiento</a>
+        <a class="cat-chip" href="index.html?cat=Nutricion">Nutrición</a>
+        <a class="cat-chip" href="index.html?cat=Mentalidad">Mentalidad</a>
+        <a class="cat-chip" href="index.html?cat=Bienestar">Bienestar</a>
+      </div>
+    </div>
 
     <!-- Header -->
     <div class="ch-header">

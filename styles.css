@@ -124,6 +124,12 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .cat-chip{flex-shrink:0;padding:7px 18px;border-radius:100px;border:1px solid #2a2a2a;background:transparent;color:var(--muted2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;transition:all .18s;white-space:nowrap}
 .cat-chip.active{background:var(--lime);color:#000;border-color:var(--lime)}
 .cat-chip:hover:not(.active){background:var(--s2);color:var(--text)}
+a.cat-chip{text-decoration:none;display:inline-block}
+
+/* ══ NAV HEADER (challenge + article detail pages) ══ */
+.nav-header{background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-header-top{padding:max(env(safe-area-inset-top,0px),20px) 20px 12px;display:flex;align-items:center}
+#article-content>.nav-header{position:sticky;top:0;z-index:50}
 
 /* ══ HOME SECTIONS ══ */
 .home-section{padding:0 20px;margin-bottom:8px}
@@ -291,7 +297,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .frow-arr svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
 
 /* ══ CONTENT DETAIL ══ */
-.ct-nav{position:absolute;top:0;left:0;right:0;z-index:10;padding:52px 16px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent)}
+.ct-nav{position:absolute;top:0;left:0;right:0;z-index:10;padding:12px 16px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent)}
 .ct-media{width:100%;height:clamp(140px,40vw,200px);position:relative;background:#000;flex-shrink:0}
 .ct-media img,.ct-media video{width:100%;height:100%;object-fit:cover;display:block}
 .ct-media-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#111}
@@ -392,6 +398,7 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 
 /* ══ DESKTOP ══ */
 @media(min-width:901px){
+  .nav-header-top{padding:24px 32px 12px}
   .home-header{padding:28px 32px 16px}
   .cat-bar{padding:0 32px 16px}
   .feat-card{margin:0 32px 24px;aspect-ratio:21/9}

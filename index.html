@@ -60,11 +60,11 @@
 
         <!-- Category bar -->
         <div class="cat-bar">
-          <button class="cat-chip active" onclick="setCategory('todos',this)">Todos</button>
-          <button class="cat-chip" onclick="setCategory('entrenamiento',this)">Entrenamiento</button>
-          <button class="cat-chip" onclick="setCategory('Nutricion',this)">Nutrición</button>
-          <button class="cat-chip" onclick="setCategory('Mentalidad',this)">Mentalidad</button>
-          <button class="cat-chip" onclick="setCategory('Bienestar',this)">Bienestar</button>
+          <button class="cat-chip active" data-cat="todos" onclick="setCategory('todos',this)">Todos</button>
+          <button class="cat-chip" data-cat="entrenamiento" onclick="setCategory('entrenamiento',this)">Entrenamiento</button>
+          <button class="cat-chip" data-cat="Nutricion" onclick="setCategory('Nutricion',this)">Nutrición</button>
+          <button class="cat-chip" data-cat="Mentalidad" onclick="setCategory('Mentalidad',this)">Mentalidad</button>
+          <button class="cat-chip" data-cat="Bienestar" onclick="setCategory('Bienestar',this)">Bienestar</button>
         </div>
 
         <!-- Scrollable content -->

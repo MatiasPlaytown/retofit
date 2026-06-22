@@ -269,6 +269,16 @@ let currentCategory = 'todos';
 
 async function initHome() {
   initNav();
+
+  const params = new URLSearchParams(location.search);
+  const catParam = params.get('cat');
+  if (catParam) {
+    currentCategory = catParam;
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    const chip = document.querySelector(`.cat-chip[data-cat="${catParam}"]`);
+    if (chip) chip.classList.add('active');
+  }
+
   renderDailySkeletons();
 
   try {
@@ -361,18 +371,9 @@ function renderDailyCards() {
   }).join('');
 }
 
-function renderFeaturedContent(items) {
+function renderFeaturedContent() {
   const wrap = document.getElementById('home-featured-wrap');
-  if (!wrap) return;
-  if (!items.length) { wrap.innerHTML = ''; return; }
-  const featured = items[0];
-  wrap.innerHTML = `
-    <div class="feat-card" onclick="location.href='article.html?id=${featured.id}'">
-      <img src="${featured.thumbnail}" alt="${featured.title}" loading="lazy" onerror="this.style.display='none'">
-      <div class="feat-card-overlay">
-        <p class="feat-title">${featured.title}</p>
-      </div>
-    </div>`;
+  if (wrap) wrap.innerHTML = '';
 }
 
 function renderContentGrid(items, showAll) {
@@ -382,7 +383,7 @@ function renderContentGrid(items, showAll) {
   if (!grid) return;
   if (recentSection) recentSection.style.display = '';
 
-  const pool = showAll ? items : items.slice(1, 9);
+  const pool = showAll ? items : items.slice(0, 8);
   if (!pool.length) { grid.innerHTML = ''; return; }
 
   if (titleEl) titleEl.textContent = 'Contenido reciente';
