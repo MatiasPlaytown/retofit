@@ -307,15 +307,15 @@ body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-
 .ct-desc{font-size:14px;color:#ccc;line-height:1.6;margin-bottom:20px}
 .ct-paragraph{font-size:13px;color:#ccc;line-height:1.7;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .ct-paragraph:last-child{border-bottom:none}
-.ct-next-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}
-.ct-next-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.ct-next-preview{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s1);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .2s;text-decoration:none}
-.ct-next-preview:hover{border-color:rgba(191,255,0,0.25);background:var(--s2)}
-.ct-next-thumb{width:60px;height:60px;border-radius:10px;overflow:hidden;background:#111;flex-shrink:0}
-.ct-next-thumb img{width:100%;height:100%;object-fit:cover}
-.ct-next-info{flex:1}
-.ct-next-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--text);margin-bottom:3px}
-.ct-next-sub{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.ct-art-nav{margin-top:28px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:10px}
+.ct-art-nav-btn{flex:1;display:flex;align-items:center;gap:10px;padding:12px;background:var(--s1);border:1px solid var(--border);border-radius:14px;text-decoration:none;transition:all .2s;min-width:0}
+.ct-art-nav-btn:hover{border-color:rgba(191,255,0,0.25);background:var(--s2)}
+.ct-art-nav-btn--next{justify-content:flex-end}
+.ct-art-nav-thumb{width:48px;height:48px;border-radius:8px;overflow:hidden;background:#111;flex-shrink:0}
+.ct-art-nav-thumb img{width:100%;height:100%;object-fit:cover}
+.ct-art-nav-info{flex:1;min-width:0}
+.ct-art-nav-label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.ct-art-nav-title{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ══ MODAL ══ */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:60;display:none;align-items:flex-end;justify-content:center}

@@ -576,24 +576,34 @@ function renderArticle(article) {
     }
   }
 
-  // Next article
-  const nextSection = document.getElementById('ct-next-section');
+  // Previous / next article navigation
+  const navSection = document.getElementById('ct-art-nav');
+  const prevId = article.previous && article.previous !== '' ? article.previous : null;
   const nextId = article.next && article.next !== '' ? article.next : null;
-  if (nextSection) {
-    if (nextId) {
-      nextSection.style.display = 'block';
-      const nextPreview = document.getElementById('ct-next-preview');
-      if (nextPreview) nextPreview.href = `article.html?id=${nextId}`;
-      fetchArticleById(nextId).then(next => {
-        const nextImg = document.getElementById('ct-next-img');
-        if (nextImg && next.thumbnail) nextImg.src = next.thumbnail;
-        const nextName = document.getElementById('ct-next-name');
-        if (nextName) nextName.textContent = next.title;
-      }).catch(() => {});
-    } else {
-      nextSection.style.display = 'none';
-    }
+  const prevBtn = document.getElementById('ct-prev-btn');
+  const nextBtn = document.getElementById('ct-next-btn');
+
+  if (prevId && prevBtn) {
+    prevBtn.href = `article.html?id=${prevId}`;
+    prevBtn.style.display = 'flex';
+    fetchArticleById(prevId).then(prev => {
+      const img = document.getElementById('ct-prev-img');
+      if (img && prev.thumbnail) img.src = prev.thumbnail;
+      const name = document.getElementById('ct-prev-name');
+      if (name) name.textContent = prev.title;
+    }).catch(() => {});
   }
+  if (nextId && nextBtn) {
+    nextBtn.href = `article.html?id=${nextId}`;
+    nextBtn.style.display = 'flex';
+    fetchArticleById(nextId).then(next => {
+      const img = document.getElementById('ct-next-img');
+      if (img && next.thumbnail) img.src = next.thumbnail;
+      const name = document.getElementById('ct-next-name');
+      if (name) name.textContent = next.title;
+    }).catch(() => {});
+  }
+  if (navSection && (prevId || nextId)) navSection.style.display = 'flex';
 
   document.getElementById('ct-body-wrap')?.scrollTo(0, 0);
 }

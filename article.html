@@ -68,17 +68,23 @@
       <p class="ct-desc" id="ct-desc"></p>
       <div id="ct-paragraphs"></div>
 
-      <!-- Siguiente artículo -->
-      <div class="ct-next-section" id="ct-next-section" style="display:none">
-        <p class="ct-next-label">Siguiente artículo</p>
-        <a class="ct-next-preview" id="ct-next-preview" href="#">
-          <div class="ct-next-thumb"><img id="ct-next-img" src="" alt=""></div>
-          <div class="ct-next-info">
-            <p class="ct-next-name" id="ct-next-name">—</p>
+      <!-- Navegación anterior / siguiente -->
+      <div class="ct-art-nav" id="ct-art-nav" style="display:none">
+        <a class="ct-art-nav-btn" id="ct-prev-btn" href="#" style="display:none">
+          <svg style="width:16px;height:16px;stroke:var(--lime);fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          <div class="ct-art-nav-thumb"><img id="ct-prev-img" src="" alt=""></div>
+          <div class="ct-art-nav-info">
+            <span class="ct-art-nav-label">Anterior</span>
+            <span class="ct-art-nav-title" id="ct-prev-name">—</span>
           </div>
-          <svg style="width:16px;height:16px;stroke:var(--lime);fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
+        </a>
+        <a class="ct-art-nav-btn ct-art-nav-btn--next" id="ct-next-btn" href="#" style="display:none">
+          <div class="ct-art-nav-info" style="text-align:right">
+            <span class="ct-art-nav-label">Siguiente</span>
+            <span class="ct-art-nav-title" id="ct-next-name">—</span>
+          </div>
+          <div class="ct-art-nav-thumb"><img id="ct-next-img" src="" alt=""></div>
+          <svg style="width:16px;height:16px;stroke:var(--lime);fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </div>
     </div>
