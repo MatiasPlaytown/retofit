@@ -409,8 +409,8 @@ a.cat-chip{text-decoration:none;display:inline-block}
   .daily-prog-row{padding:0 32px}
   #daily-tips-container{grid-template-columns:1fr 1fr}
   .load-more-btn{width:calc(100% - 64px);margin:8px 32px 16px}
-  /* Article detail: bigger hero image + centered reading column */
-  .ct-media{height:clamp(300px,38vw,480px)}
+  /* Article detail: image + text in centered column, image scales naturally */
+  .ct-media{max-width:720px;width:100%;margin:0 auto;height:auto;aspect-ratio:16/9;border-radius:16px;overflow:hidden}
   .ct-body{max-width:720px;width:100%;margin:0 auto;padding:40px 32px 80px}
 }
 
