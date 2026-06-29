@@ -28,14 +28,15 @@
 }
 
 html,body{height:100%}
-body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+html{overflow-x:hidden}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased;width:100%;overflow-x:hidden;overflow-wrap:break-word}
 
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
 
 /* ══ APP SHELL ══ */
-.app-wrap{display:flex;min-height:100dvh}
+.app-wrap{display:flex;min-height:100dvh;width:100%;max-width:100%;overflow-x:hidden}
 .app-main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 
 /* ══ SIDEBAR / BOTTOM NAV ══ */
@@ -396,6 +397,7 @@ a.cat-chip{text-decoration:none;display:inline-block}
   .profile-grid{grid-template-columns:1fr}
   .mc-stats{grid-template-columns:repeat(3,1fr)}
   .ch-header{padding:56px 20px 14px}
+  .ct-desc,.ct-paragraph,.body,.step-txt{text-align:justify}
 }
 
 /* ══ DESKTOP ══ */
