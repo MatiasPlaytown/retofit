@@ -616,6 +616,8 @@ let vprogInt = null;
 let realVideoReady = false;
 let countdownSecs = 0;
 let countdownInt = null;
+let countdownRunning = false;
+let settingVideoState = false;
 
 async function initChallengePage() {
   initNav();
@@ -647,7 +649,7 @@ function renderChallenge(c) {
   document.getElementById('ch-level').textContent = durLabel;
   document.getElementById('ch-desc').textContent = c.desc;
   document.getElementById('vbg').style.background = c.grad + ';background-size:400% 400%';
-  document.getElementById('vanim').innerHTML = ANIMS[c.anim] || ANIMS.squat;
+  document.getElementById('vanim').innerHTML = '';
   document.getElementById('ch-dur-txt').textContent = 'Duración: ' + fmtTime(c.duration);
   document.getElementById('ch-dur-txt').style.display = '';
   document.getElementById('vtime-lbl').textContent = '0:00 / ' + fmtTime(c.duration);
@@ -662,9 +664,14 @@ function renderChallenge(c) {
     </div>`).join('');
 
   const vid = document.getElementById('vreal');
+  const vl = document.getElementById('vloading');
+  const ve = document.getElementById('verror');
+  if (vl) vl.style.display = 'none';
+  if (ve) ve.style.display = 'none';
   if (c.video) {
     vid.src = c.video;
     document.getElementById('vplayer').style.display = '';
+    if (vl) vl.style.display = 'flex';
   } else {
     vid.src = '';
     document.getElementById('vplayer').style.display = 'none';
@@ -690,7 +697,9 @@ function toggleVideo() {
     rec.classList.add('live');
     icon.innerHTML = '<rect x="6" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/><rect x="14" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/>';
     if (realVideoReady) {
-      vid.play();
+      settingVideoState = true;
+      vid.play().catch(() => {});
+      settingVideoState = false;
     } else {
       clearInterval(vprogInt);
       const tickMs = Math.max(50, dur * 1000 / 200);
@@ -708,19 +717,49 @@ function toggleVideo() {
         }
       }, tickMs);
     }
+    resumeCountdown();
   } else {
     bg.classList.remove('playing');
     ov.style.display = 'flex';
     rec.textContent = 'Tutorial';
     rec.classList.remove('live');
     icon.innerHTML = '<path d="M5 3l14 9-14 9V3z" fill="rgba(255,255,255,0.8)" stroke="none"/>';
-    if (realVideoReady) { vid.pause(); } else { clearInterval(vprogInt); }
+    if (realVideoReady) {
+      settingVideoState = true;
+      vid.pause();
+      settingVideoState = false;
+    } else {
+      clearInterval(vprogInt);
+    }
+    pauseCountdown();
   }
+}
+
+function pauseCountdown() {
+  clearInterval(countdownInt);
+  countdownInt = null;
+}
+
+function resumeCountdown() {
+  if (!countdownRunning || countdownSecs <= 0 || countdownInt) return;
+  countdownInt = setInterval(() => {
+    countdownSecs = Math.max(0, countdownSecs - 1);
+    updateCountdownDisplay();
+    if (countdownSecs <= 0) {
+      clearInterval(countdownInt);
+      countdownInt = null;
+      countdownRunning = false;
+      enableFinishBtn();
+    }
+  }, 1000);
 }
 
 function resetVideo() {
   videoPlaying = false;
+  countdownRunning = false;
   clearInterval(vprogInt);
+  clearInterval(countdownInt);
+  countdownInt = null;
   const vid = document.getElementById('vreal');
   vid.pause();
   vid.currentTime = 0;
@@ -750,14 +789,52 @@ function setupVideoListeners() {
   vid.addEventListener('canplay', () => {
     realVideoReady = true;
     vid.style.display = 'block';
+    const vl = document.getElementById('vloading');
+    if (vl) vl.style.display = 'none';
     document.getElementById('vbg').style.opacity = '0';
-    document.getElementById('vanim').style.opacity = '0';
   });
   vid.addEventListener('error', () => {
     realVideoReady = false;
     vid.style.display = 'none';
+    const vl = document.getElementById('vloading');
+    if (vl) vl.style.display = 'none';
+    const ve = document.getElementById('verror');
+    if (ve) ve.style.display = 'flex';
     document.getElementById('vbg').style.opacity = '';
-    document.getElementById('vanim').style.opacity = '';
+  });
+  vid.addEventListener('waiting', () => {
+    if (videoPlaying) {
+      const vl = document.getElementById('vloading');
+      if (vl) vl.style.display = 'flex';
+      pauseCountdown();
+    }
+  });
+  vid.addEventListener('playing', () => {
+    const vl = document.getElementById('vloading');
+    if (vl) vl.style.display = 'none';
+    if (videoPlaying) {
+      resumeCountdown();
+    } else if (countdownRunning) {
+      videoPlaying = true;
+      resumeCountdown();
+      document.getElementById('vbg').classList.add('playing');
+      document.getElementById('voverlay').style.display = 'none';
+      document.getElementById('vrec').textContent = 'EN VIVO';
+      document.getElementById('vrec').classList.add('live');
+      document.getElementById('vplay-icon').innerHTML = '<rect x="6" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/><rect x="14" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/>';
+    }
+  });
+  vid.addEventListener('pause', () => {
+    if (settingVideoState) return;
+    if (videoPlaying) {
+      videoPlaying = false;
+      pauseCountdown();
+      document.getElementById('vbg').classList.remove('playing');
+      document.getElementById('voverlay').style.display = 'flex';
+      document.getElementById('vrec').textContent = 'Tutorial';
+      document.getElementById('vrec').classList.remove('live');
+      document.getElementById('vplay-icon').innerHTML = '<path d="M5 3l14 9-14 9V3z" fill="rgba(255,255,255,0.8)" stroke="none"/>';
+    }
   });
   vid.addEventListener('timeupdate', () => {
     if (!currentChallenge || !vid.duration) return;
@@ -766,30 +843,15 @@ function setupVideoListeners() {
     document.getElementById('vpfill').style.width = pct + '%';
     updateVTimeLabel(Math.floor(vid.currentTime), currentChallenge.duration);
   });
-  vid.addEventListener('ended', () => {
-    videoPlaying = false;
-    document.getElementById('vpfill').style.width = '100%';
-    document.getElementById('vbg').classList.remove('playing');
-    document.getElementById('voverlay').style.display = 'flex';
-    document.getElementById('vrec').textContent = 'Tutorial';
-    document.getElementById('vrec').classList.remove('live');
-    document.getElementById('vplay-icon').innerHTML = '<path d="M5 3l14 9-14 9V3z" fill="rgba(255,255,255,0.8)" stroke="none"/>';
-    enableFinishBtn();
-  });
 }
 
 function startCountdown(dur) {
   clearInterval(countdownInt);
+  countdownInt = null;
   countdownSecs = dur;
+  countdownRunning = true;
   updateCountdownDisplay();
-  countdownInt = setInterval(() => {
-    countdownSecs = Math.max(0, countdownSecs - 1);
-    updateCountdownDisplay();
-    if (countdownSecs <= 0) {
-      clearInterval(countdownInt);
-      enableFinishBtn();
-    }
-  }, 1000);
+  resumeCountdown();
 }
 
 function updateCountdownDisplay() {
@@ -829,6 +891,8 @@ function startChallenge() {
 function finishChallenge() {
   if (!currentChallenge) return;
   clearInterval(countdownInt);
+  countdownInt = null;
+  countdownRunning = false;
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
   if (id) markChallengeCompleted(id);
