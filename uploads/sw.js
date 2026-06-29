@@ -1,4 +1,4 @@
-const CACHE = 'retofit-v5';
+const CACHE = 'retofit-v6';
 const FILES = [
   '/',
   '/index.html',
