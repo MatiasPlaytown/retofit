@@ -242,15 +242,15 @@ a.cat-chip{text-decoration:none;display:inline-block}
 
 /* ══ CHALLENGE INFO ══ */
 .ch-header{padding:22px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
-.ch-header-info{text-align:right}
+.ch-header-info{text-align:right;min-width:0;overflow:hidden}
 .ch-header-dur{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.ch-header-name{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;text-transform:uppercase;color:var(--text);letter-spacing:-.3px;line-height:1}
+.ch-header-name{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;text-transform:uppercase;color:var(--text);letter-spacing:-.3px;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ch-info{padding:24px 26px;display:flex;flex-direction:column;gap:18px}
 .ch-steps-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:18px}
 .ch-step{display:flex;align-items:flex-start;gap:10px}
 .step-num{width:22px;height:22px;border-radius:50%;background:var(--lime-dim);border:1px solid var(--lime-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-num span{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;color:var(--lime)}
-.step-txt{font-size:13px;color:var(--muted2);line-height:1.5}
+.step-txt{font-size:13px;color:var(--muted2);line-height:1.5;min-width:0;overflow-wrap:break-word}
 
 /* ══ MISSION COMPLETE ══ */
 @keyframes cpop{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
