@@ -670,6 +670,7 @@ function renderChallenge(c) {
   if (ve) ve.style.display = 'none';
   if (c.video) {
     vid.src = c.video;
+    vid.load();
     document.getElementById('vplayer').style.display = '';
     if (vl) vl.style.display = 'flex';
   } else {
@@ -696,11 +697,10 @@ function toggleVideo() {
     rec.textContent = 'EN VIVO';
     rec.classList.add('live');
     icon.innerHTML = '<rect x="6" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/><rect x="14" y="4" width="4" height="16" fill="rgba(255,255,255,0.8)"/>';
-    if (realVideoReady) {
-      settingVideoState = true;
-      vid.play().catch(() => {});
-      settingVideoState = false;
-    } else {
+    settingVideoState = true;
+    vid.play().catch(() => {});
+    settingVideoState = false;
+    if (!realVideoReady) {
       clearInterval(vprogInt);
       const tickMs = Math.max(50, dur * 1000 / 200);
       let pct = parseFloat(fill.style.width) || 0;
@@ -724,13 +724,10 @@ function toggleVideo() {
     rec.textContent = 'Tutorial';
     rec.classList.remove('live');
     icon.innerHTML = '<path d="M5 3l14 9-14 9V3z" fill="rgba(255,255,255,0.8)" stroke="none"/>';
-    if (realVideoReady) {
-      settingVideoState = true;
-      vid.pause();
-      settingVideoState = false;
-    } else {
-      clearInterval(vprogInt);
-    }
+    settingVideoState = true;
+    vid.pause();
+    settingVideoState = false;
+    clearInterval(vprogInt);
     pauseCountdown();
   }
 }
@@ -810,6 +807,7 @@ function setupVideoListeners() {
     }
   });
   vid.addEventListener('playing', () => {
+    clearInterval(vprogInt);
     const vl = document.getElementById('vloading');
     if (vl) vl.style.display = 'none';
     if (videoPlaying) {
