@@ -131,7 +131,7 @@ function getDailyState() {
     const raw = localStorage.getItem(DAILY_KEY);
     if (raw) { const s = JSON.parse(raw); if (s.date === today) return s; }
   } catch (e) {}
-  return { date: today, challengeIds: [], completed: [] };
+  return { date: today, challengeIds: [], completed: [], inProgress: [] };
 }
 
 function saveDailyState(s) { localStorage.setItem(DAILY_KEY, JSON.stringify(s)); }
@@ -145,6 +145,23 @@ function markChallengeCompleted(id) {
 
 function isChallengeCompleted(id) {
   return getDailyState().completed.includes(String(id));
+}
+
+function markChallengeInProgress(id) {
+  const s = getDailyState();
+  s.inProgress = s.inProgress || [];
+  const key = String(id);
+  if (!s.inProgress.includes(key)) { s.inProgress.push(key); saveDailyState(s); }
+}
+
+function removeChallengeInProgress(id) {
+  const s = getDailyState();
+  s.inProgress = (s.inProgress || []).filter(k => k !== String(id));
+  saveDailyState(s);
+}
+
+function isChallengeInProgress(id) {
+  return (getDailyState().inProgress || []).includes(String(id));
 }
 
 function getThisMonday() {
@@ -348,6 +365,7 @@ function renderDailyCards() {
   if (!container || !allChallenges.length) return;
   const ds = getDailyState();
   const done = ds.completed;
+  const inProg = ds.inProgress || [];
   const total = allChallenges.length;
   const doneCount = done.filter(id => allChallenges.some(c => String(c.id) === id)).length;
 
@@ -358,14 +376,17 @@ function renderDailyCards() {
 
   container.innerHTML = allChallenges.map(c => {
     const isDone = done.includes(String(c.id));
-    return `<div class="reto-card${isDone ? ' reto-done' : ''}" ${isDone ? '' : `onclick="location.href='challenge.html?id=${c.id}'"`}>
+    const isInProg = !isDone && inProg.includes(String(c.id));
+    return `<div class="reto-card${isDone ? ' reto-done' : isInProg ? ' reto-inprog' : ''}" onclick="${isDone ? '' : `location.href='challenge.html?id=${c.id}'`}">
       <div class="reto-thumb">
         <img src="${c.thumbnail}" alt="${c.title}" loading="lazy" onerror="this.style.display='none'">
         ${isDone ? `<div class="reto-done-ov"><div class="reto-check"><svg style="width:18px;height:18px;stroke:#000;fill:none;stroke-width:3;stroke-linecap:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div></div>` : ''}
+        ${isInProg ? `<div class="reto-inprog-ov"><div class="reto-inprog-dot"></div></div>` : ''}
       </div>
       <div class="reto-body">
         <p class="reto-name">${c.title}</p>
         ${isDone ? `<div class="reto-done-badge"><svg viewBox="0 0 24 24"><path d="M13 2L4.5 13.5H11L10 22L20 10H13.5Z"/></svg><span>COMPLETADO</span></div>` : ''}
+        ${isInProg ? `<div class="reto-inprog-badge"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg><span>EN PROGRESO</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -863,6 +884,20 @@ function updateCountdownDisplay() {
   if (fill) fill.style.width = Math.min(100, (elapsed / dur) * 100) + '%';
 }
 
+function restartChallenge() {
+  const dur = (currentChallenge && currentChallenge.duration) || 60;
+  startCountdown(dur);
+  const finBtn = document.getElementById('ch-finish-btn');
+  if (finBtn) { finBtn.disabled = true; finBtn.style.opacity = '0.4'; finBtn.classList.remove('pulse'); }
+}
+
+function abandonChallenge() {
+  clearInterval(countdownInt);
+  countdownInt = null;
+  countdownRunning = false;
+  history.back();
+}
+
 function startChallenge() {
   document.getElementById('ch-start-btn').style.display = 'none';
   document.getElementById('ch-dur-txt').style.display = 'none';
@@ -875,8 +910,12 @@ function startChallenge() {
   finBtn.style.opacity = '0.4';
   finBtn.classList.remove('pulse');
 
+  const actBtns = document.getElementById('ch-action-btns');
+  if (actBtns) actBtns.style.display = 'flex';
+
   const dur = (currentChallenge && currentChallenge.duration) || 60;
   startCountdown(dur);
+  if (currentChallenge && currentChallenge.id) markChallengeInProgress(currentChallenge.id);
 
   const hasVideo = !!(currentChallenge && currentChallenge.video);
   if (hasVideo) {
@@ -894,6 +933,7 @@ function finishChallenge() {
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
   if (id) markChallengeCompleted(id);
+  if (currentChallenge.id) removeChallengeInProgress(currentChallenge.id);
   const stats = updateStatsAfterChallenge(currentChallenge.duration);
   resetVideo();
   showMissionComplete(currentChallenge, stats);
