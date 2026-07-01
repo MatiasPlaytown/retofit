@@ -430,7 +430,7 @@ a.cat-chip{text-decoration:none;display:inline-block}
 .start-label{font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted)}
 .start-stepper{display:flex;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;height:54px;transition:border-color .18s}
 .start-stepper:focus-within{border-color:rgba(191,255,0,0.35)}
-.start-stepper button{width:54px;height:54px;background:transparent;border:none;color:var(--lime);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;font-family:'Barlow Condensed',sans-serif}
+.start-stepper button{width:54px;height:54px;background:transparent;border:none;color:var(--lime);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;touch-action:manipulation}
 .start-stepper button:hover{background:var(--lime-dim)}
 .start-stepper button:active{background:rgba(191,255,0,0.15)}
 .start-stepper-val{flex:1;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px}
